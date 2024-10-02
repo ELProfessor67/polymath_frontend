@@ -127,7 +127,8 @@ export default function page() {
     useEffect(() => {
         if (user?.profiles?.length && user?.profiles?.length != 0) {
             getEmails(user?.profiles?.map((profile) => profile.email));
-            setTimeout(() => {
+            setInterval(() => {
+            
                 getEmails(user?.profiles?.map((profile) => profile.email));
             }, 30000);
         }
