@@ -54,10 +54,11 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
                     <span><ContactRound size={20}/></span>
                     Onboarding
                 </Link>
-                {/* <Link href="/dashboard/ai-audio" className={`flex items-center gap-2 py-2 px-4 rounded hover:bg-white hover:text-black ${pathname.includes('ai-audio') ? 'bg-white text-black' : ''}`}>
+                <Link href="/dashboard/ai-audio" className={`flex whitespace-pre items-center gap-2 py-2 px-4 rounded hover:bg-white hover:text-black ${pathname.includes('ai-audio') ? 'bg-white text-black' : ''}`}>
                     <span><Brain size={20}/></span>
                     AI Audio Calls
-                </Link> */}
+                    <span className='bg-white text-black px-2 py-1 rounded-3xl text-[12px] font-semibold whitespace-pre'>Coming Soon</span>
+                </Link>
                 {/* <Link href="/dashboard/exnternal-integrations" className={`flex items-center gap-2 py-2 px-4 rounded hover:bg-white hover:text-black ${pathname.includes('exnternal-integrations') ? 'bg-white text-black' : ''}`}>
                     <span><Atom size={20}/></span>
                     External Integrations

@@ -359,7 +359,7 @@ export default function page() {
                                     <div className="text-sm text-gray-400">{selectedEmail?.created_at ? formatCustomDate(selectedEmail?.created_at) : ''}</div>
                                 </div>
                                 <h1 className="text-[28px] font-medium mb-4">{selectedEmail?.subject}</h1>
-                                <div className='text-[14px] text-gray-11 space-y-4'>
+                                <div className='text-[14px] text-gray-11 space-y-4 h-[88vh] overflow-y-auto'>
                                     <ReactMarkdown remarkPlugins={[remarkGfm]}>{selectedEmail?.content?.email_body}</ReactMarkdown>
                                 </div>
 

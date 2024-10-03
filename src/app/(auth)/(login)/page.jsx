@@ -13,7 +13,7 @@ import { useRouter } from "next/navigation"
 
 export default function page() {
 
-  const { setUser, setIsAuth } = useContext(UserContext);
+  const { setUser, setIsAuth,getUser } = useContext(UserContext);
   const router = useRouter();
 
   const handleSubmit = async (e) => {
@@ -24,6 +24,7 @@ export default function page() {
       setUser(data.user);
       setIsAuth(true)
       toast.success(data.message);
+      getUser();
       if (data?.user?.hire_orders?.length == 0) {
         router.push('/hire');
       } else {

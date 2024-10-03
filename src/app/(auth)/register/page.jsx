@@ -15,7 +15,7 @@ import axios from "axios"
 export default function page() {
 
 
-  const { setUser, setIsAuth } = useContext(UserContext);
+  const { setUser, setIsAuth,getUser } = useContext(UserContext);
   const router = useRouter();
 
   const handleSubmit = async (e) => {
@@ -33,6 +33,7 @@ export default function page() {
       const { data } = await registerUserRequest(formData);
       setUser(data.user);
       setIsAuth(true)
+      getUser();
       toast.success(data.message);
       router.push('/hire');
 
