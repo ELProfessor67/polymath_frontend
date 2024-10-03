@@ -4,7 +4,7 @@ import DialogBox from '@/components/DialogBox';
 import { getAllEmailsRequest, getEmailOutboxRequest, registerProfileRequest, scheduleMailRequest } from '@/http/apiCalls';
 import { UserContext } from '@/providers/UserProvider';
 import { PlusCircle, ChevronDown, Search, Archive, Trash2, RefreshCw, CornerUpLeft, CornerUpRight, Share2, FolderSymlink, HelpCircle, Settings, Inbox, Send, Clock, Menu, ChevronUp, CircleChevronDown, CirclePlus, SquarePen, Circle, Plus } from 'lucide-react'
-import { useCallback, useContext, useEffect, useState } from 'react'
+import { useCallback, useContext, useEffect, useRef, useState } from 'react'
 import { toast } from 'react-toastify';
 import { formatTimestampToTime, formatCustomDate } from '@/lib/formatDate'
 import ReactMarkdown from 'react-markdown'
@@ -21,6 +21,7 @@ export default function page() {
     const [scheduledMails, setScheduledMails] = useState([]);
     const [selectedEmail, setSelectedEmail] = useState(null);
     const [openScheduled, setOpenScheduled] = useState(false);
+    const intervaref = useRef();
 
 
     console.log(scheduledMails, 'scheduledMails')
@@ -127,8 +128,10 @@ export default function page() {
     useEffect(() => {
         if (user?.profiles?.length && user?.profiles?.length != 0) {
             getEmails(user?.profiles?.map((profile) => profile.email));
-            setInterval(() => {
-            
+            if(intervaref.current){
+                clearInterval(intervaref.current)
+            }
+            intervaref.current = setInterval(() => {
                 getEmails(user?.profiles?.map((profile) => profile.email));
             }, 30000);
         }
