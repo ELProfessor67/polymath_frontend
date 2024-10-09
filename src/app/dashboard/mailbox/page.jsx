@@ -3,28 +3,30 @@ import DialogBox from '@/components/DialogBox';
 // import { emails } from '@/constants/emails';
 import { getAllEmailsRequest, getEmailOutboxRequest, registerProfileRequest, scheduleMailRequest } from '@/http/apiCalls';
 import { UserContext } from '@/providers/UserProvider';
-import { PlusCircle, ChevronDown, Search, Archive, Trash2, RefreshCw, CornerUpLeft, CornerUpRight, Share2, FolderSymlink, HelpCircle, Settings, Inbox, Send, Clock, Menu, ChevronUp, CircleChevronDown, CirclePlus, SquarePen, Circle, Plus } from 'lucide-react'
+import { PlusCircle, ChevronDown, Search, Archive, Trash2, RefreshCw, CornerUpLeft, CornerUpRight, Share2, FolderSymlink, HelpCircle, Settings, Inbox, Send, Clock, Menu, ChevronUp, CircleChevronDown, CirclePlus, SquarePen, Circle, Plus, } from 'lucide-react'
 import { useCallback, useContext, useEffect, useRef, useState } from 'react'
 import { toast } from 'react-toastify';
 import { formatTimestampToTime, formatCustomDate } from '@/lib/formatDate'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+import Loader from '@/components/Loader'
 
 
 
 export default function page() {
     const [activeTab, setActiveTab] = useState('inbox');
-    const { user, getUser } = useContext(UserContext);
+    const { user, getUser,loading } = useContext(UserContext);
     const [open, setOpen] = useState(false);
     const [indexMails, setInboxMails] = useState([]);
     const [outboxMails, setOutboxMails] = useState([]);
     const [scheduledMails, setScheduledMails] = useState([]);
     const [selectedEmail, setSelectedEmail] = useState(null);
     const [openScheduled, setOpenScheduled] = useState(false);
+    const [selectProfile, setSelectProfile] = useState(null);
+    const [selectProfileOpen, setSetectProfileOpen] = useState(false);
     const intervaref = useRef();
 
 
-    console.log(scheduledMails, 'scheduledMails')
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -75,14 +77,33 @@ export default function page() {
 
 
 
+    const saveInLocalStorage = useCallback(async (key,data) => {
+        try {
+            window.localStorage.setItem(key, JSON.stringify(data));
+        } catch (error) {
+            console.log('Error while saving data in local storage', error.message)
+        }
+    }, [])
+
+    const getFromLocalStorage = useCallback(async (key) => {
+        try {
+            const data = window.localStorage.getItem(key);
+            return data ? JSON.parse(data) : null;
+        } catch (error) {
+            console.log('Error while getting data from local storage', error.message)
+        }
+    }, []);
+
+
+
     const handleScheduleSubmit = useCallback(async (e) => {
         e.preventDefault();
         try {
             const formData = new FormData(e.target);
             const sendTimeInput = formData.get('send_time');
             formData.set('send_time', sendTimeInput + ":00");
-            formData.append("from_addr", user?.profiles[0]?.email);
-            formData.append("user_avtr", user?.profiles[0]?.email?.split('')[0].toUpperCase());
+            formData.append("from_addr", selectProfile?.email);
+            formData.append("user_avtr", selectProfile?.email?.split('')[0].toUpperCase());
             formData.append("created_at", new Date().toISOString());
             const res = await scheduleMailRequest(formData);
             toast.success(res.data.message);
@@ -96,6 +117,7 @@ export default function page() {
             }
             data.email_id = Math.floor(Math.random() * 100000000)
             saveScheduleInLocalStorage(data);
+
         } catch (error) {
             toast.error(error.response?.data?.message);
             console.log(error);
@@ -103,6 +125,20 @@ export default function page() {
     }, [user])
 
     const getEmails = useCallback(async (emailList) => {
+        if(indexMails.length === 0){
+            const inboxsMails = await getFromLocalStorage('inbox');
+            setInboxMails(inboxsMails || []);
+        }
+        if(outboxMails.length === 0){
+            const outboxsMails = await getFromLocalStorage('outbox');
+            setOutboxMails(outboxsMails || []);
+        }
+        if(scheduledMails.length === 0){
+            getScheduledMails();
+        }
+        
+        
+        setScheduledMails(scheduledMails || []);
         try {
             const formData = {
                 emails: emailList
@@ -119,7 +155,9 @@ export default function page() {
             }
             
             setOutboxMails(ores.data.data);
-            getScheduledMails()
+            getScheduledMails();
+            saveInLocalStorage('inbox',ires.data.data);
+            saveInLocalStorage('outbox',ores.data.data);
         } catch (error) {
             console.log(error);
         }
@@ -127,15 +165,35 @@ export default function page() {
 
     useEffect(() => {
         if (user?.profiles?.length && user?.profiles?.length != 0) {
-            getEmails(user?.profiles?.map((profile) => profile.email));
+            let emailList;
+            if(!selectProfile){
+                setSelectProfile(user?.profiles[0]);
+                emailList = [user?.profiles[0].email]
+            }else{
+                emailList = [selectProfile.email]
+            }
+
+
+            
+            getEmails(emailList);
             if(intervaref.current){
                 clearInterval(intervaref.current)
             }
             intervaref.current = setInterval(() => {
-                getEmails(user?.profiles?.map((profile) => profile.email));
+                getEmails(emailList);
             }, 30000);
         }
-    }, [user])
+    }, [user,selectProfile])
+
+    
+
+    if(loading){
+        return(
+            <div className='flex items-center justify-center h-[80vh]'>
+                <Loader/>
+            </div>
+        )
+    }
     return (
 
         <main className="flex-1 overflow-x-hidden overflow-y-auto  p-6">
@@ -144,18 +202,18 @@ export default function page() {
                 <div className="flex-grow flex flex-col lg:flex-row">
                     <div className="lg:w-1/3 dark:bg-gray-7 bg-white rounded-l-md border-r border-gray-4/30">
                         <div className="p-4 border-b border-gray-4/30">
-                            <div className="flex items-center justify-between mb-4">
+                            <div className="flex items-center justify-between mb-4 relative">
                                 <div className="flex items-center">
                                     <div className="w-10 h-10 rounded-full dark:bg-gray-700 bg-gray-4 flex items-center justify-center mr-3">
-                                        <span className="text-lg font-semibold">{user?.profiles[0]?.email?.split('')[0].toUpperCase()}</span>
+                                        <span className="text-lg font-semibold">{selectProfile?.email?.split('')[0].toUpperCase()}</span>
                                     </div>
                                     <div>
-                                        <h2 className="font-bold">{user?.profiles[0]?.email?.split('@')[0]}</h2>
-                                        <p className="text-sm text-gray-400">{user?.profiles[0]?.email}</p>
+                                        <h2 className="font-bold">{selectProfile?.email?.split('@')[0]}</h2>
+                                        <p className="text-sm text-gray-400">{selectProfile?.email}</p>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-3">
-                                    <button className='bg-none outline-none border-none'>
+                                    <button className='bg-none outline-none border-none' onClick={() => setSetectProfileOpen(prev => !prev)}>
                                         <CircleChevronDown />
                                     </button>
                                     <button className='bg-none outline-none border-none' onClick={() => setOpen(true)}>
@@ -163,6 +221,28 @@ export default function page() {
                                     </button>
 
                                 </div>
+
+                                {/* select box going here  */}
+                                {
+                                    selectProfileOpen &&
+                                    <div className='w-full h-[20rem] bg-white-shade-1 dark:bg-gray-8 space-y-3 absolute top-[3rem] left-0 z-50 rounded-md p-2 overflow-y-auto'>
+                                    {
+                                        user && user.profiles.map((profile) => (
+                                            <div className={`flex items-center hover:bg-gray-10/80 cursor-pointer p-1 rounded-md ${profile.email == selectProfile?.email ? 'bg-gray-10/80' : ''}`} onClick={() => {setSelectProfile(profile); setSetectProfileOpen(false)}}>
+                                                <div className={`w-10 h-10 rounded-full dark:bg-gray-700 bg-gray-4 flex items-center justify-center mr-3 `}>
+                                                    <span className="text-lg font-semibold">{profile?.email?.split('')[0].toUpperCase()}</span>
+                                                </div>
+                                                <div>
+                                                    <h2 className="font-bold">{profile?.email?.split('@')[0]}</h2>
+                                                    <p className="text-sm text-gray-400">{profile?.email}</p>
+                                                </div>
+                                            </div>
+                                        ))
+                                    }
+                                </div>
+                                }
+                                
+                                
                             </div>
 
                             <div className="flex space-x-4 mb-6 mt-6">
@@ -198,7 +278,7 @@ export default function page() {
                         </div>
                         {
                             activeTab === 'inbox' &&
-                            <div className="overflow-y-auto h-[88vh] px-4 space-y-2 mt-2">
+                            <div className="overflow-y-auto h-[88vh] md:h-[105vh] px-4 space-y-2 mt-2">
                                 {indexMails && indexMails.length != 0 && indexMails.map((email) => (
                                     <div key={email.email_id} className={`flex items-start p-4 hover:bg-gray-10/80 rounded-md cursor-pointer text-black dark:text-white ${selectedEmail?.email_id === email.email_id ? 'bg-gray-10/80' : ''}`} onClick={() => setSelectedEmail(email)}>
                                         <div className="flex-shrink-0 mr-4">
@@ -233,7 +313,7 @@ export default function page() {
 
                         {
                             activeTab === 'outbox' &&
-                            <div className="overflow-y-auto h-[88vh] px-4 space-y-2 mt-2">
+                            <div className="overflow-y-auto h-[88vh] md:h-[105vh] px-4 space-y-2 mt-2">
                                 {outboxMails && outboxMails.length != 0 && outboxMails.map((email) => (
                                     <div key={email.email_id} className={`flex items-start p-4 hover:bg-gray-10/80 rounded-md cursor-pointer text-black dark:text-white ${selectedEmail?.email_id === email.email_id ? 'bg-gray-10/80' : ''}`} onClick={() => setSelectedEmail(email)}>
                                         <div className="flex-shrink-0 mr-4">
@@ -268,7 +348,7 @@ export default function page() {
 
                         {
                             activeTab === 'scheduled' &&
-                            <div className="overflow-y-auto h-[88vh] px-4 space-y-2 mt-2">
+                            <div className="overflow-y-auto h-[88vh] md:h-[105vh] px-4 space-y-2 mt-2">
                                 {scheduledMails && scheduledMails.length != 0 && scheduledMails.map((email) => (
                                     <div key={email.email_id} className={`flex items-start p-4 hover:bg-gray-10/80 rounded-md cursor-pointer text-black dark:text-white ${selectedEmail?.email_id === email.email_id ? 'bg-gray-10/80' : ''}`} onClick={() => setSelectedEmail(email)}>
                                         <div className="flex-shrink-0 mr-4">

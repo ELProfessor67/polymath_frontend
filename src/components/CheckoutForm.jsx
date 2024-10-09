@@ -12,6 +12,7 @@ import {
   CardElement
 } from '@stripe/react-stripe-js';
 import { creaetePaymentIntentRequest } from '@/http/apiCalls';
+import { useRouter } from 'next/navigation';
 
 export const CheckoutForm = ({ employee }) => {
   const stripe = useStripe();
@@ -19,9 +20,11 @@ export const CheckoutForm = ({ employee }) => {
 
   const [errorMessage, setErrorMessage] = useState('');
   const [emailInput, setEmailInput] = useState('');
+  const router = useRouter();
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    
 
     if (elements == null || stripe == null) {
       return;
@@ -35,6 +38,9 @@ export const CheckoutForm = ({ employee }) => {
       return;
     }
 
+    // router.push('/success')
+    console.log(elements,'elements')
+
 
 
     try {
@@ -43,6 +49,8 @@ export const CheckoutForm = ({ employee }) => {
       formData.append('bot_id', employee.id)
       const { data } = await creaetePaymentIntentRequest(formData);
       const { client_secret: clientSecret } = data;
+
+      
 
       const { error } = await stripe.confirmPayment({
         //`Elements` instance that was used to create the Payment Element
@@ -53,7 +61,7 @@ export const CheckoutForm = ({ employee }) => {
         },
       });
 
-      console.log(error)
+    
 
       if (error) {
         setErrorMessage(error.message);
@@ -70,7 +78,7 @@ export const CheckoutForm = ({ employee }) => {
       <div className='flex flex-col gap-1'>
         <label className='text-[14px] font-medium text-gray-2'>Card Number*</label>
         <div className='py-1  px-2 border border-gray-2 rounded-md  flex flex-row items-center'>
-          <CardNumberElement className='w-full' />
+          <CardNumberElement className='w-full' required={true}/>
           <img src='/images/icons/visa.png' className='inline-block' />
         </div>
 
@@ -82,7 +90,7 @@ export const CheckoutForm = ({ employee }) => {
         <div className='flex flex-col gap-1'>
           <label className='text-[14px] font-medium text-gray-2'>Card Number*</label>
           <div className='py-3  px-2 border border-gray-2 rounded-md  flex flex-row items-center'>
-            <CardExpiryElement className='w-full' />
+            <CardExpiryElement className='w-full' required={true}/>
 
           </div>
 
@@ -92,7 +100,7 @@ export const CheckoutForm = ({ employee }) => {
         <div className='flex flex-col gap-1'>
           <label className='text-[14px] font-medium text-gray-2'>Card Number*</label>
           <div className='py-3  px-2 border border-gray-2 rounded-md  flex flex-row items-center'>
-            <CardCvcElement className='w-full' />
+            <CardCvcElement className='w-full' required={true}/>
 
           </div>
 
@@ -107,14 +115,14 @@ export const CheckoutForm = ({ employee }) => {
       </div>
 
       <div className='flex flex-row gap-2 items-center'>
-        <input type='checkbox' className='accent-dark-blue mt-1' />
+        <input type='checkbox' className='accent-dark-blue mt-1'/>
         <p className='text-gray-1 text-[16px]'>Billing address same as shipping address</p>
       </div>
 
       <div className='flex flex-col gap-1'>
         <label className='text-[14px] font-medium text-gray-2'>Street Address*</label>
         <div className='py-3  px-2 border border-gray-2 rounded-md  flex flex-row items-center'>
-          <input type='text' className='w-full outline-none border-none' placeholder='Address' />
+          <input type='text' className='w-full outline-none border-none' placeholder='Address'  required/>
 
         </div>
 
@@ -126,7 +134,7 @@ export const CheckoutForm = ({ employee }) => {
         <div className='flex flex-col gap-1'>
           <label className='text-[14px] font-medium text-gray-2'>Apt Number</label>
           <div className='py-3  px-2 border border-gray-2 rounded-md  flex flex-row items-center'>
-            <input type='text' className='w-full outline-none border-none' placeholder='' />
+            <input type='text' className='w-full outline-none border-none' placeholder=''  required/>
 
           </div>
         </div>
@@ -135,7 +143,7 @@ export const CheckoutForm = ({ employee }) => {
         <div className='flex flex-col gap-1'>
           <label className='text-[14px] font-medium text-gray-2'>State</label>
           <div className='py-3  px-2 border border-gray-2 rounded-md  flex flex-row items-center'>
-            <input type='text' className='w-full outline-none border-none' placeholder='' />
+            <input type='text' className='w-full outline-none border-none' placeholder=''  required/>
 
           </div>
         </div>
@@ -143,7 +151,7 @@ export const CheckoutForm = ({ employee }) => {
         <div className='flex flex-col gap-1'>
           <label className='text-[14px] font-medium text-gray-2'>Zip</label>
           <div className='py-3  px-2 border border-gray-2 rounded-md  flex flex-row items-center'>
-            <input type='text' className='w-full outline-none border-none' placeholder='' />
+            <input type='text' className='w-full outline-none border-none' placeholder=''  required/>
 
           </div>
         </div>

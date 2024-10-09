@@ -13,6 +13,7 @@ import 'swiper/scss/navigation';
 import 'swiper/scss/pagination';
 import EmployeeDetailsCard from '@/components/EmployeeDetailsCard';
 import { useScreenSize } from '@/hooks/useScreenSize';
+import Loader from '@/components/Loader';
 
 
 
@@ -85,7 +86,11 @@ const page = () => {
 
 
   if(isLoading){
-    return <h1>Loading...</h1>
+    return (
+      <div className='flex items-center justify-center h-[100vh] bg-gray-7'>
+          <Loader/>
+      </div>
+    )
   }
 
 

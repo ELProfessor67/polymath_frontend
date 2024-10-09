@@ -6,6 +6,7 @@ import { CheckoutForm } from '@/components/CheckoutForm'
 import { STRIPE_PUBLIC_KEY } from '@/constants';
 import { getSingleEmployeeRequest } from '@/http/apiCalls';
 import EmployeeCheckoutCard from '@/components/EmployeeCheckoutCard';
+import Loader from '@/components/Loader';
 
 const page = ({ params }) => {
   const { id } = params;
@@ -37,11 +38,15 @@ const page = ({ params }) => {
 
   if (!employee || !options) {
     // Render a loading state while fetching employee data
-    return <div>Loading...</div>;
+    return(
+      <div className='flex items-center justify-center h-[100vh] bg-gray-7'>
+          <Loader/>
+      </div>
+    )
   }
 
   return (
-    <div className='flex flex-row h-screen'>
+    <div className='flex flex-row'>
       {/* left  */}
       <div className='w-[60vw] bg-[url("/images/check-bg.png")] bg-cover bg-center hidden md:flex justify-start flex-col items-center'>
         <img src="/images/logo/logo-white.png" alt="Polymaths.AI Logo" width={180} height={60} className="mt-8 mx-auto mb-8" />
