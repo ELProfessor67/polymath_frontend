@@ -38,8 +38,7 @@ export const CheckoutForm = ({ employee }) => {
       return;
     }
 
-    // router.push('/success')
-    console.log(elements,'elements')
+    router.push('/success')
 
 
 
